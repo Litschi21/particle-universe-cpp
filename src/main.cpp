@@ -39,6 +39,7 @@ void addRandParticle() { particles.emplace_back(Particle::getRandParticle()); }
 
 int main() {
   sf::RenderWindow window(sf::VideoMode({width, height}), "Particle Universe");
+  window.setFramerateLimit(fps);
   bool skip = false;
 
   for (int i{}; i < numParticles; ++i) {

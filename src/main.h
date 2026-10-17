@@ -26,7 +26,9 @@ constexpr float width_f = static_cast<float>(width);
 constexpr float height_f = static_cast<float>(height);
 
 inline int largestID = 0;
-constexpr float dt = 1.f / 60;
+constexpr int fps = 60;
+constexpr float timescale = 13;
+constexpr float dt = timescale / fps;
 constexpr int maxSize = 200;
 constexpr float defaultSize = 5;
 constexpr int numParticles = 100;
