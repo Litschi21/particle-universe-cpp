@@ -7,10 +7,11 @@
 #include <vector>
 
 Particle Particle::getRandParticle() {
-  return Particle(largestID++, 5.f, sf::Color::Cyan, randFloat(0.f, width_f),
-                  randFloat(0.f, height_f), randInt(10, 1'000), randFloat(-2.f, 2.f),
-                  randFloat(-2.f, 2.f));
-};
+  return Particle(largestID++, defaultSize, sf::Color::Cyan, randFloat(0.f, width_f),
+                  randFloat(0.f, height_f), randInt(minStartingMass, maxStartingMass),
+                  randFloat(minStartingSpeed, maxStartingSpeed),
+                  randFloat(minStartingSpeed, maxStartingSpeed));
+}
 
 bool Particle::operator==(const Particle &p) const { return (p.id == this->id); }
 
@@ -27,12 +28,7 @@ int randInt(const int min, const int max) {
 }
 
 void removeParticle(const int id) {
-  for (size_t i{}; i < particles.size(); ++i) {
-    if (id == particles[i].id) {
-      particles.erase(particles.begin() + i);
-      return;
-    }
-  }
+  std::erase_if(particles, [id](Particle &p) { return id == p.id; });
 }
 
 bool scheduledForRemoval(const int id) {
@@ -43,6 +39,7 @@ void addRandParticle() { particles.emplace_back(Particle::getRandParticle()); }
 
 int main() {
   sf::RenderWindow window(sf::VideoMode({width, height}), "Particle Universe");
+  bool skip = false;
 
   for (int i{}; i < numParticles; ++i) {
     addRandParticle();
@@ -65,7 +62,7 @@ int main() {
       particle.setPosition({p.x, p.y});
       window.draw(particle);
 
-      if (p.size > 200) {
+      if (p.size > maxSize) {
         for (auto &p2 : particles) {
           if (p2.id == p.id)
             continue;
@@ -78,31 +75,34 @@ int main() {
             continue;
 
           float dist = std::sqrt(distSquared);
-          float strength = 5'000'000.f / (distSquared + 100.f);
+          float strength = explosionStrength / (distSquared + 100.f);
 
           p2.xVel += (dx / dist) * strength;
           p2.yVel += (dy / dist) * strength;
         }
 
         toRemove.emplace_back(p.id);
-        break;
+        continue;
       }
 
       if (scheduledForRemoval(p.id))
         continue;
 
       for (auto &p2 : particles) {
-        if (p == p2 || scheduledForRemoval(p2.id) || p2.size > 200)
+        if (p == p2 || scheduledForRemoval(p2.id) || p2.size > maxSize)
           continue;
 
-        if (std::abs(p.x - p2.x) < std::max(p.size, p2.size) &&
-            std::abs(p.y - p2.y) < std::max(p.size, p2.size)) {
-          merged.emplace_back(
-              Particle(largestID++, p.size + p2.size, sf::Color::Cyan,
-                       (p.x * p.size + p2.x * p2.size) / (p.size + p2.size),
-                       (p.y * p.size + p2.y * p2.size) / (p.size + p2.size), p.mass + p2.mass,
-                       (p.xVel * p.size + p2.xVel * p2.size) / (p.size + p2.size),
-                       (p.yVel * p.size + p2.yVel * p2.size) / (p.size + p2.size), 0.f));
+        float dx = p2.x - p.x;
+        float dy = p2.y - p.y;
+        float distSquared = dx * dx + dy * dy;
+        float radii = p.size + p2.size;
+        if (distSquared < radii * radii) {
+          merged.emplace_back(Particle(largestID++, p.size + p2.size, sf::Color::Cyan,
+                                       (p.x * p.size + p2.x * p2.size) / (p.size + p2.size),
+                                       (p.y * p.size + p2.y * p2.size) / (p.size + p2.size),
+                                       p.mass + p2.mass,
+                                       (p.xVel * p.size + p2.xVel * p2.size) / (p.size + p2.size),
+                                       (p.yVel * p.size + p2.yVel * p2.size) / (p.size + p2.size)));
 
           toRemove.emplace_back(p.id);
           toRemove.emplace_back(p2.id);
@@ -111,10 +111,6 @@ int main() {
           break;
         }
 
-        float dx = p2.x - p.x;
-        float dy = p2.y - p.y;
-
-        float distSquared = dx * dx + dy * dy;
         if (distSquared > 0.01f) {
           float force = p2.mass / distSquared;
 

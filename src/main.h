@@ -15,7 +15,6 @@ public:
   int mass;
   float xVel = 0.f;
   float yVel = 0.f;
-  float acc = 0.f;
 
   static Particle getRandParticle();
   bool operator==(const Particle &p) const;
@@ -26,20 +25,24 @@ constexpr int height = 1440;
 constexpr float width_f = static_cast<float>(width);
 constexpr float height_f = static_cast<float>(height);
 
-const double G = 6.6743 * std::pow(10, -11);
-constexpr float dt = 0.016;
+inline int largestID = 0;
+constexpr float dt = 1.f / 60;
+constexpr int maxSize = 200;
+constexpr float defaultSize = 5;
 constexpr int numParticles = 100;
+constexpr int minStartingMass = 10;
+constexpr int maxStartingMass = 1'000;
+constexpr float maxStartingSpeed = 2;
+constexpr float minStartingSpeed = -2;
+constexpr float explosionStrength = 5'000'000;
 
-int largestID = 0;
-bool skip = false;
-
-std::vector<Particle> particles{};
-std::vector<Particle> merged{};
-std::vector<int> toRemove{};
+inline std::vector<Particle> particles{};
+inline std::vector<Particle> merged{};
+inline std::vector<int> toRemove{};
 
 float randFloat(float min, float max);
 int randInt(int min, int max);
-void removeParticle();
+void removeParticle(int id);
 bool scheduledForRemoval(int id);
 void addRandParticle();
 
