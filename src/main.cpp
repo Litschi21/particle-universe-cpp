@@ -7,9 +7,11 @@
 #include <vector>
 
 Particle Particle::getRandParticle() {
-  return Particle(largestID++, defaultSize, sf::Color::Cyan, randFloat(0.f, width_f),
-                  randFloat(0.f, height_f), randInt(minStartingMass, maxStartingMass),
-                  randFloat(minStartingSpeed, maxStartingSpeed),
+  int mass = randInt(minStartingMass, maxStartingMass);
+  float size = std::log(mass);
+
+  return Particle(largestID++, size, sf::Color::Cyan, randFloat(0.f, width_f),
+                  randFloat(0.f, height_f), mass, randFloat(minStartingSpeed, maxStartingSpeed),
                   randFloat(minStartingSpeed, maxStartingSpeed));
 }
 

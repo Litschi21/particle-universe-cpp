@@ -30,7 +30,6 @@ constexpr int fps = 60;
 constexpr float timescale = 13;
 constexpr float dt = timescale / fps;
 constexpr int maxSize = 200;
-constexpr float defaultSize = 5;
 constexpr int numParticles = 100;
 constexpr int minStartingMass = 10;
 constexpr int maxStartingMass = 1'000;
